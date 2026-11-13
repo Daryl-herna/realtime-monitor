@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>信息 / 价格异动实时监控</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Ccircle cx=%228%22 cy=%228%22 r=%226%22 fill=%22%234c8dff%22/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="dot" id="conn-dot"></span>
+    <h1>信息 / 价格异动实时监控</h1>
+  </div>
+  <div class="meta">
+    <span class="pill" id="mode-pill">数据模式：LIVE</span>
+    <span class="pill" id="latency-pill">端到端延迟：—</span>
+    <span class="pill" id="uptime-pill">运行：—</span>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" data-view="quotes">实时行情</button>
+  <button class="tab" data-view="alerts">实时告警流</button>
+  <button class="tab" data-view="compare">多标的对比</button>
+  <button class="tab" data-view="tasks">监控任务</button>
+  <button class="tab" data-view="health">数据源健康</button>
+  <button class="tab" data-view="history">历史查询</button>
+  <button class="tab" data-view="replay">规则回放</button>
+</nav>
+
+<div class="banner" id="degrade-banner" hidden></div>
+
+<main>
+  <!-- 实时行情 -->
+  <section id="view-quotes" class="view active">
+    <div class="toolbar">
+      <label>周期
+        <select id="q-period">
+          <option value="60">1 分钟</option>
+          <option value="300" selected>5 分钟</option>
+          <option value="900">15 分钟</option>
+          <option value="3600">1 小时</option>
+        </select>
+      </label>
+      <label>时间窗口
+        <select id="q-window">
+          <option value="300">5 分钟</option>
+          <option value="900">15 分钟</option>
+          <option value="1800">30 分钟</option>
+          <option value="3600" selected>1 小时</option>
+          <option value="14400">4 小时</option>
+          <option value="86400">全天</option>
+        </select>
+      </label>
+      <label><input type="checkbox" id="q-autorefresh" checked> 自动刷新（2s）</label>
+      <label title="告警时播放提示音"><input type="checkbox" id="q-sound" checked> 🔔 声音</label>
+      <label title="页面在后台也能收到系统通知"><input type="checkbox" id="q-notify" checked> 📢 桌面通知</label>
+      <span class="muted" id="q-updated">—</span>
+    </div>
+    <div id="quote-grid" class="quote-grid"></div>
+    <p class="muted" style="margin-top:16px">
+      涨跌幅相对昨收；点击任意卡片查看该标的的 K 线（蜡烛图 + MA5/10/20）。
+      非交易时段价格不更新属正常。
+    </p>
+
+    <!-- K 线详情面板 -->
+    <div id="kline-panel" class="kpanel" hidden>
+      <div class="khead">
+        <div><b id="k-title">—</b> <span id="k-meta" class="muted"></span></div>
+        <div class="kbtns">
+          <select id="k-indicator" title="副图指标">
+            <option value="none">无副图</option>
+            <option value="vol" selected>成交量 + 量均线</option>
+            <option value="macd">MACD</option>
+            <option value="kdj">KDJ</option>
+            <option value="boll">BOLL（主图叠加）</option>
+          </select>
+          <span class="muted" style="font-size:11px">MA5</span>
+          <span style="color:#faad14;font-size:11px">MA10</span>
+          <span style="color:#4c8dff;font-size:11px">MA20</span>
+          <button id="k-close" class="ghost">关闭</button>
+        </div>
+      </div>
+      <canvas id="k-chart" class="kchart"></canvas>
+      <canvas id="k-sub" class="ksub"></canvas>
+    </div>
+  </section>
+
+  <!-- 实时告警流 -->
+  <section id="view-alerts" class="view">
+    <div class="stat-row">
+      <div class="stat"><label>事件总数</label><b id="stat-events">—</b></div>
+      <div class="stat"><label>告警总数</label><b id="stat-alerts">—</b></div>
+      <div class="stat"><label>P1</label><b id="stat-p1" class="p1">—</b></div>
+      <div class="stat"><label>P2</label><b id="stat-p2" class="p2">—</b></div>
+      <div class="stat"><label>P3</label><b id="stat-p3" class="p3">—</b></div>
+      <div class="stat"><label>抑制计数</label><b id="stat-supp">—</b></div>
+      <div class="stat"><label>水位线</label><b id="stat-wm">—</b></div>
+      <div class="stat"><label>SSE 客户端</label><b id="stat-clients">—</b></div>
+    </div>
+    <div class="toolbar">
+      <label><input type="checkbox" id="auto-scroll" checked> 自动滚动</label>
+      <select id="sev-filter">
+        <option value="">全部级别</option><option>P1</option><option>P2</option><option>P3</option>
+      </select>
+      <button id="clear-feed">清空视图</button>
+      <span class="muted" id="feed-hint">等待告警…（没消息 ≠ 没问题，请看数据源健康）</span>
+    </div>
+    <ul id="alert-feed" class="feed"></ul>
+    <h3 class="sub">抑制明细</h3>
+    <table class="tbl" id="supp-table">
+      <thead><tr><th>指纹</th><th>任务</th><th>次数</th><th>最后时间</th><th>原因</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- 任务管理 -->
+  <!-- 多标的对比 -->
+  <section id="view-compare" class="view">
+    <p class="muted">统一归一化到 100（以所选窗口第一个收盘价为基准），直接比较相对强弱。不同价位的品种也能画在一起。</p>
+    <div class="toolbar">
+      <label>周期
+        <select id="c-period">
+          <option value="60">1 分钟</option>
+          <option value="300" selected>5 分钟</option>
+          <option value="900">15 分钟</option>
+          <option value="3600">1 小时</option>
+        </select>
+      </label>
+      <label>根数 <input id="c-limit" type="number" value="200" min="20" max="500" style="width:70px"></label>
+      <button id="c-refresh">刷新</button>
+      <button id="c-clear" class="ghost">清空选择</button>
+    </div>
+    <div id="c-chips" class="chips"></div>
+    <div class="cpanel">
+      <canvas id="c-chart" class="cchart"></canvas>
+      <div id="c-legend" class="clegend"></div>
+    </div>
+  </section>
+
+  <section id="view-tasks" class="view">
+    <div class="toolbar">
+      <button id="new-task">+ 新建任务</button>
+      <span class="muted">任务改动即时生效，无需重启</span>
+    </div>
+    <div id="task-list"></div>
+    <div id="task-editor" class="editor" hidden>
+      <h3>任务配置</h3>
+      <label>任务 ID <input id="f-id" placeholder="留空自动生成"></label>
+      <label>名称 <input id="f-name" required></label>
+      <label>类型
+        <select id="f-type"><option value="price">价格异动</option><option value="info">信息异动</option></select>
+      </label>
+      <label>启用 <input type="checkbox" id="f-enabled" checked></label>
+      <label>标的 / 来源（逗号分隔）<input id="f-subjects" placeholder="sh000001,sh000300 或 pbc,em_rss"></label>
+      <label>规则 JSON（数组）
+        <textarea id="f-rules" rows="10" spellcheck="false"></textarea>
+      </label>
+      <label>冷却时间（秒）<input id="f-cooldown" type="number" value="300"></label>
+      <div class="row">
+        <button id="save-task">保存</button>
+        <button id="cancel-task" class="ghost">取消</button>
+        <span id="task-msg" class="muted"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 数据源健康 -->
+  <section id="view-health" class="view">
+    <p class="muted">「没消息 ≠ 没问题」：下列状态由独立心跳守卫计算，采集器静默即视为异常。</p>
+    <table class="tbl" id="health-table">
+      <thead><tr><th>数据源</th><th>状态</th><th>间隔</th><th>最后成功</th><th>距现在</th><th>延迟</th><th>事件数</th><th>最近错误</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <h3 class="sub">心跳守卫</h3>
+    <div class="stat-row" id="guard-row"></div>
+  </section>
+
+  <!-- 历史查询 -->
+  <section id="view-history" class="view">
+    <div class="toolbar">
+      <label>类型
+        <select id="h-kind">
+          <option value="">全部</option><option value="quote">行情</option>
+          <option value="news">新闻</option><option value="notice">公告</option>
+          <option value="baseline">基线</option>
+        </select>
+      </label>
+      <label>条数 <input id="h-limit" type="number" value="100" min="10" max="1000"></label>
+      <button id="h-refresh">查询</button>
+    </div>
+    <table class="tbl" id="history-table">
+      <thead><tr><th>seq</th><th>来源</th><th>类型</th><th>标的</th><th>事件时间</th><th>内容</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- 回放 -->
+  <section id="view-replay" class="view">
+    <p class="muted">用落盘的历史事件回放，对比新旧规则命中差异。时间格式：2026-11-12 09:30</p>
+    <div class="toolbar">
+      <label>任务 <select id="r-task"></select></label>
+      <label>从 <input id="r-from" placeholder="2026-11-12 09:30"></label>
+      <label>到 <input id="r-to" placeholder="2026-11-12 15:00"></label>
+      <button id="r-run">开始回放</button>
+    </div>
+    <label class="full">新规则 JSON（留空则用当前规则对比自身）
+      <textarea id="r-config" rows="8" spellcheck="false"></textarea>
+    </label>
+    <div id="replay-result"></div>
+  </section>
+</main>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

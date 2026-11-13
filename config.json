@@ -1,0 +1,63 @@
+{
+  "server": { "host": "127.0.0.1", "port": 8848 },
+  "storage": { "db_path": "data/monitor.db", "retention_days": 30 },
+  "bus": { "poll_interval_ms": 100, "batch_size": 200 },
+  "stream": { "allowed_lateness_ms": 3000, "late_policy": "drop", "window_grace_ms": 2000 },
+  "alerts": {
+    "default_cooldown_s": 300,
+    "silence_windows": [],
+    "digest_interval_s": 120,
+    "resolve_after_s": 300,
+    "max_alerts_per_minute": 30
+  },
+  "heartbeat": { "tick_s": 5, "stale_factor": 3.0, "down_factor": 8.0, "pipeline_stale_s": 120 },
+  "sources": {
+    "sina":      { "enabled": true, "interval_s": 0.8, "min_interval_s": 0.8 },
+    "tencent":   { "enabled": false, "interval_s": 5,  "min_interval_s": 3 },
+    "em_kline":  { "enabled": true, "interval_s": 300, "min_interval_s": 60 },
+    "em_rss":    { "enabled": true, "interval_s": 60,  "min_interval_s": 30 },
+    "sina_roll": { "enabled": true, "interval_s": 60,  "min_interval_s": 30 },
+    "em_notice": { "enabled": true, "interval_s": 60,  "min_interval_s": 30 },
+    "pbc":       { "enabled": true, "interval_s": 300, "min_interval_s": 120 },
+    "backfill":  { "enabled": true, "interval_s": 3600, "min_interval_s": 60 }
+  },
+  "watchlist": {
+    "backfill": [
+      { "symbol": "nf_CU0",   "name": "沪铜主力",   "class": "futures", "enabled": true, "days": 2 },
+      { "symbol": "nf_RB0",   "name": "螺纹钢主力", "class": "futures", "enabled": true, "days": 2 },
+      { "symbol": "nf_AU0",   "name": "黄金主力",   "class": "futures", "enabled": true, "days": 2 },
+      { "symbol": "sh000001", "name": "上证指数",   "class": "index",   "enabled": true, "days": 2 },
+      { "symbol": "sh000300", "name": "沪深300",    "class": "index",   "enabled": true, "days": 2 },
+      { "symbol": "sz399001", "name": "深证成指",   "class": "index",   "enabled": true, "days": 2 },
+      { "symbol": "sz399006", "name": "创业板指",   "class": "index",   "enabled": true, "days": 2 },
+      { "symbol": "sh510300", "name": "沪深300ETF", "class": "index",   "enabled": true, "days": 2 },
+      { "symbol": "sh518880", "name": "黄金ETF",    "class": "index",   "enabled": true, "days": 2 }
+    ],
+    "sina": [
+      { "symbol": "sh000001",  "name": "上证指数", "class": "index",   "enabled": true },
+      { "symbol": "sh000300",  "name": "沪深300",  "class": "index",   "enabled": true },
+      { "symbol": "sz399001",  "name": "深证成指", "class": "index",   "enabled": true },
+      { "symbol": "sz399006",  "name": "创业板指", "class": "index",   "enabled": true },
+      { "symbol": "nf_AU0",    "name": "黄金主力", "class": "futures", "enabled": true },
+      { "symbol": "nf_CU0",    "name": "沪铜主力", "class": "futures", "enabled": true },
+      { "symbol": "nf_RB0",    "name": "螺纹钢主力","class": "futures", "enabled": true },
+      { "symbol": "fx_susdcny","name": "USD/CNY",  "class": "fx",      "enabled": true },
+      { "symbol": "fx_seurusd","name": "EUR/USD",  "class": "fx",      "enabled": true },
+      { "symbol": "hf_XAU",    "name": "伦敦金",   "class": "global",  "enabled": true },
+      { "symbol": "hf_XAG",    "name": "伦敦银",   "class": "global",  "enabled": true },
+      { "symbol": "hf_CL",     "name": "纽约原油", "class": "global",  "enabled": true },
+      { "symbol": "hf_GC",     "name": "纽约黄金", "class": "global",  "enabled": true },
+      { "symbol": "sh510300",  "name": "沪深300ETF","class": "index",  "enabled": true },
+      { "symbol": "sh518880",  "name": "黄金ETF",  "class": "index",   "enabled": true }
+    ],
+    "tencent": [],
+    "em_kline": [
+      { "symbol": "sh000001", "name": "上证指数", "days": 20, "enabled": true },
+      { "symbol": "sh000300", "name": "沪深300",  "days": 20, "enabled": true },
+      { "symbol": "sz399001", "name": "深证成指", "days": 20, "enabled": true },
+      { "symbol": "sz399006", "name": "创业板指", "days": 20, "enabled": true },
+      { "symbol": "sh510300", "name": "沪深300ETF","days": 20, "enabled": true },
+      { "symbol": "sh518880", "name": "黄金ETF",  "days": 20, "enabled": true }
+    ]
+  }
+}
