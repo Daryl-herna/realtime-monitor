@@ -1,8 +1,17 @@
 # 实时异动监控 · Realtime Monitor
 
+[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Zero Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen.svg)](#外部依赖)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](#快速开始)
+[![SSE](https://img.shields.io/badge/streaming-SSE-orange.svg)](#sse-幂等)
+
 对接**真实公开数据源**的轻量流式监控系统。单进程、零第三方依赖、纯 Python 标准库。
 
 盯盘 + 异动告警 + 多源信息监控，一个 `python run.py` 跑起来。
+
+> ⚠️ **仅供个人学习与自用**。数据来自非官方公开接口，商用需向持牌数据商购买授权。
+> 详见 [DISCLAIMER.md](DISCLAIMER.md)。
 
 ```
 ┌─────────────┐   ┌──────────────┐   ┌─────────────┐   ┌──────────────┐
