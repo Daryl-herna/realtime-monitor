@@ -56,15 +56,35 @@ Windows 用户也可以双击 `启动.bat`。
 
 ## 截图
 
-| 实时行情 | K 线 + MACD |
-|---|---|
-| ![quotes](docs/images/quotes.png) | ![kline](docs/images/kline.png) |
+### 实时行情
 
-| 多标的对比 | 数据源健康 |
-|---|---|
-| ![compare](docs/images/compare.png) | ![health](docs/images/health.png) |
+15 个标的同屏，红涨绿跌，实时状态灯区分「实时 / 已收盘」。
 
-> 截图待补充：运行后自行截取放入 `docs/images/`。
+![实时行情](docs/images/quotes.png)
+
+### K 线 + MACD
+
+点击任意卡片查看 K 线。蜡烛图 + MA5/10/20，副图可切成交量 / MACD / KDJ / BOLL。
+
+![K线](docs/images/kline.png)
+
+### 多标的对比
+
+归一化到 100，不同价位的品种也能比较相对强弱。
+
+![多标的对比](docs/images/compare.png)
+
+### 数据源健康
+
+「没消息 ≠ 没问题」：采集静默、链路停滞都会在这里暴露。
+
+![数据源健康](docs/images/health.png)
+
+### 实时告警流
+
+P1/P2/P3 分级，带抑制计数与聚合摘要。
+
+![告警流](docs/images/alerts.png)
 
 ## 技术栈
 
