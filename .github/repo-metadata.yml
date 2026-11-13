@@ -1,0 +1,15 @@
+# GitHub 仓库元信息（部分需要手动应用）
+# 参考：https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository
+
+description: 零依赖的实时异动监控系统 · 盯盘 + 告警 + K线 + 多源信息监控
+homepage: ""
+topics:
+  - python
+  - realtime
+  - stock-monitor
+  - market-data
+  - sse
+  - sqlite
+  - streaming
+  - technical-analysis
+  - zero-dependencies
