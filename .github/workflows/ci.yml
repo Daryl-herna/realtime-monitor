@@ -5,19 +5,29 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   check:
+    name: 语法与导入检查 (Python ${{ matrix.python-version }} on ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        python-version: ["3.9", "3.11", "3.12"]
+        include:
+          # 主要测试目标：Ubuntu + 现代 Python
+          - os: ubuntu-latest
+            python-version: "3.11"
+          - os: ubuntu-latest
+            python-version: "3.12"
+          # Windows 验证跨平台（启动脚本、路径处理）
+          - os: windows-latest
+            python-version: "3.12"
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
@@ -29,4 +39,15 @@ jobs:
         run: python -c "from app.main import build; print('imports ok')"
 
       - name: 配置校验
-        run: python -c "from app.config import Config; c = Config('config.json'); print('config ok', c.get('server', 'port'))"
+        run: python -c "from app.config import Config; c = Config('config.json'); print('config ok, port =', c.get('server', 'port'))"
+
+      - name: 指标计算单元检查
+        run: python -c "
+          from app.kline import macd, kdj, boll, moving_average;
+          bars = [{'t': i*60000, 'o': 100+i, 'h': 102+i, 'l': 98+i, 'c': 100+i, 'v': 1000, 'n': 1} for i in range(30)];
+          assert len(macd(bars)['dif']) == 30;
+          assert len(kdj(bars)['k']) == 30;
+          assert len(boll(bars)['mid']) == 30;
+          assert moving_average(bars, 5)[-1] is not None;
+          print('indicators ok')
+          "
